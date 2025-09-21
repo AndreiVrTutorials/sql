@@ -1,0 +1,139 @@
+13/02/2025
+--PROBAMOS CON TABLAS1
+select * from emple
+select * from depart
+
+--INSERCCION DE DATOS
+--INSERT
+--a) de una fila
+--b) multifila --> SELECT
+
+--INSERT DE UNA FILA
+--SINTAXIS  (mayusculas obligatorio y entre [])
+-- INSERT INTO tabla [(lista de columnas)] VALUES (valores a introducir en las columnas);
+desc depart;
+
+--A) INTRODUCIMOS UN NUEVO DEPARTAMENTO 
+--ESTOS EN LA TABLA DEPART
+insert into depart values (99,'I+D','VALLADOLID');
+insert into depart values(90,null,null);
+insert into depart (dept_no, dnombre) values (80, 'LOGISTICA');
+
+select * from depart
+
+--B) INSERCCION MULTIFILA
+--SINTAXIS,    TIENE QUE HABER UNA CORRESONDENCIA EN NUMERO DE COLUMNAS Y LOS TIPOS
+--INSERT INTO tabla [(lista de columnas)] 
+--SELECT ...
+
+--ESTOS EN LA TABLA EMPLE
+select * from emple order by dept_no;
+
+--Introduce en la tabla EMPLE_30, los empleados que trabajan en el departamento 30
+--creamos esa tabla
+CREATE TABLE EMPLE_30 (
+ EMP_NO    NUMBER(4) NOT NULL,
+ APELLIDO  VARCHAR2(10)  ,
+ OFICIO    VARCHAR2(10)  ,
+ DIR       NUMBER(4) ,
+ FECHA_ALT DATE      ,
+ SALARIO   NUMBER(7),
+ COMISION  NUMBER(7),
+ DEPT_NO   NUMBER(2) NOT NULL) ;
+--copiamos del script tabla emple del block notas
+select * from emple_30;
+desc emple_30;
+select *from depart;
+
+--introduce en la tabla EMPLE_30 los emplados que trabajan en el departamento 'VENTAS'
+insert into emple_30
+select emple.* from emple, depart
+where emple.dept_no = depart.dept_no
+and depart.dnombre like 'VENTAS';
+
+select * from emple_30;
+
+-- Introduce un nuevo empleado en la tabla EMPLE con los siguientes datos: 
+--APELLIDO = 'PEREZ', EMP_NO = 9999, FECHA_ALT: la actual, DEPARTAMENTO: el que mas empleados tiene
+--RESTO DATOS: desconocidos
+select * from emple;
+--consulta para saber el depart con mas empleados
+select dept_no from emple 
+group by emple.dept_no
+having count(*) = (select max(count(*)) from emple group by emple.dept_no);
+
+insert into emple
+select 9999, 'PEREZ', null, null, sysdate, null, null, dept_no from emple 
+								group by emple.dept_no
+								having count(*) = (select max(count(*)) 
+    								from emple group by emple.dept_no);
+
+select * from emple where apellido like 'PEREZ';
+
+-- Introduce un nuevo empleado en la tabla EMPLE con los siguientes datos: 
+--APELLIDO = 'NUEVO', EMP_NO = 9000, FECHA_ALT: la actual, DEPARTAMENTO: el que no tiene ningun empleado
+--SALARIO 1000, RESTO DATOS: desconocidos
+select dept_no 
+from depart
+where dept_no not in (select distinct dept_no from emple);
+
+insert into emple
+select 9000, 'NUEVO', null, null, sysdate, 1000, null, depart.dept_no 
+							from depart where dept_no 
+    							not in (select distinct emple.dept_no from emple); --usar el not exists
+select * from emple where apellido like 'NUEVO';
+
+--14/02/2025
+--BORRADO DE DATOS
+--FILAS DE UNA TABLA
+--SENTENCIA : DELETE [from] nombre_tabla WHERE condicion
+-- no deja borrado de filas las cuales dependen de otras tablas (SIN CONDICION (WHERE) BORRA TODO SALVO ESO)
+select * from emple_30
+
+--elimina los empleados de la tabla emple_30 que cobren mas de 1500
+delete emple_30 where salario >1500;
+
+--ejecutar tabla que tenga libreria
+--elimina los departamentos con menos de 4 empleados
+select * from emple;
+delete depart where dept_no in (select dept_no from emple group by dept_no having count(*)<4);
+--elimina las filas de la tabla libreria cuyos ejemplares no superen la media de ejemplares en su estante 
+select * from libreria
+delete libreria where ejemplares not in (select ejemplares from libreria group by ejemplares having avg(*)<)--- acaber este
+
+--17/02/2025
+--Sentencia de actualizacion
+--UPDATE tabla SET columna1=valor1, columna2=valor2,... WHERE condicion
+
+select * from emple;
+select * from depart;
+
+--Modifica el salario de los empleados del departamento 10 con un incremento de un 10%
+update emple set salario = salario *1.1 where dept_no =10;
+
+--A) UPDATE con SELECT
+--UPDATE tabla SET columna1=valor1, columna2=valor2,... WHERE condicion (SELECT ....)
+
+--B) UPDATE tabla SET columna1=(SELECT...), columna2=(SELECT...) WHERE condicion
+
+--C) UPDATE tabla SET(columna1, columna2,...) = (SELECT columna1, columna2,...) WHERE condicion
+
+--Modifica el salario de los empleados del departamento de 'VENTAS' con un incremento de 100€
+-- y las comisiones se incrementan en un 2%
+
+update emple 
+set salario = salario +100, comision = comision *1.02 
+where dept_no = (select dept_no from depart where dnombre like 'VENTAS');
+
+--Para todos los empeados del departamneto de 'CONTABILIDAD' modifica su salario al doble 
+--del salario del empleado 'SANCHEZ' y pon sus apellidos en minusculas
+update emple
+set salario = (select 2*salario from emple where apellido like 'SANCHEZ'), apellido = lower(apellido)
+where dept_no = (select dept_no from depart where dnombre like 'CONTABILIDAD');
+
+--Actualiza las comisiones a 0 para aquellos empleados que pertenezcan al 
+--departamento con mayor numero de empleados
+update emple
+set comision =0 
+where dept_no in (select dept_no from emple group by dept_no 
+    					having count(*) = (select max(count(*))from emple group by dept_no ));

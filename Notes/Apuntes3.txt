@@ -1,0 +1,148 @@
+20/01/2025
+filtrar por filas where
+por colmnas having
+
+esquema hr
+
+--Muestra el salario medio por departamento
+select * from hr.departments;
+select * from hr.employees order by employees.department_id;
+
+select employees.department_id "Id.departamento", departments.department_name "Nombre departamento",
+    round(avg(employees.salary)) "Media salario departamento"
+from hr.employees, hr.departments
+where employees.department_id = departments.department_id
+group by employees.department_id, departments.department_name
+order by employees.department_id;
+
+--Muestra el numero de paises que hay en cada region
+select * from hr.regions; --consulta regiones
+select * from hr.countries order by countries.region_id; --consulta paises
+
+select countries.region_id "Region",regions.region_name "Nombre",
+count(*)"Numero de paises de la region"
+from hr.countries, hr.regions
+where countries.region_id = regions.region_id
+group by countries.region_id, regions.region_name
+order by 2;
+
+--Muestra el numero de empleados que tienen cada manager a su cargo
+select * from hr.employees order by employees.manager_id;
+
+select employees.manager_id "manager", count(*) "empleados a su cargo"
+from hr.employees
+group by employees.manager_id
+order by 2 desc;
+/////
+select emp.manager_id "ID manager",mgr.last_name, mgr.first_name "Nombre manager", 
+    count(*) "empleados a su cargo"
+from hr.employees emp, hr.employees mgr
+where emp.manager_id = emp.employee_id
+group by emp.manager_id, mgr.last_name, mgr.first_name
+order by 4 desc;
+
+--Muestra el numero de empleados que hay en cada departamento
+select employees.department_id "id departamento" ,departments.department_name "Nombre", count (*) "nº se empleados en departamento"
+from hr.employees, hr.departments
+    where employees.department_id =departments.department_id
+group by employees.department_id, departments.department_name
+order by employees.department_id;
+
+-- Muestra el numero de rotaciones ha realizado dentro de la empresa
+select job_history.employee_id "Id empleado",employees.first_name "Nombre", count (*) "nº rotaciones empleado"
+from  hr.job_history, hr.employees
+group by job_history.employee_id,employees.first_name;
+order by job_history.employees_id;
+
+-- CON HAVING
+--Muestra el salario medio por departamento, pero solo de los departamentos que tengan mas de 5 empleados
+select * from hr.employees order by employees.department_id;
+
+select employees.department_id "Id.departamento", departments.department_name "Nombre departamento",
+    round(avg(employees.salary)) "Media salario departamento"
+from hr.employees, hr.departments
+where employees.department_id = departments.department_id
+group by employees.department_id, departments.department_name
+having count(*)>5 --poner condicion que afecta a los grupos no filas
+order by employees.department_id;
+
+--Muestra el salario medio por departamento, pero solo de los departamentos que tengan mas de 5 empleados
+-- y de teniendo en cuenta a los empleados que llevan menos de 20 años trabajando.
+--///filtrar empleados, luego agrupar
+select employees.department_id "Id.departamento", departments.department_name "Nombre departamento",
+    round(avg(employees.salary)) "Media salario departamento"
+from hr.employees, hr.departments
+where employees.department_id = departments.department_id
+and (sysdate - employees.hire_date) < 20*365
+group by employees.department_id, departments.department_name
+having count(*)>5 
+order by employees.department_id;
+
+--Muestra el numero de empleados que han pasado por mas de un puesto en la empresa 
+select job_history.employee_id "Id. Empleado",employees.first_name "Nombre", count (*) "Rotaciones"
+from  hr.job_history, hr.employees
+    where job_history.employee_id = employees.employee_id
+group by job_history.employee_id,employees.first_name
+having count (*) > 1
+order by job_history.employee_id; --deberian salir 3
+
+--Muestra el numero de empleado que ha oasadi (rotando) por mas de un puesto en la empresa
+--que pertenezca al departamento de 'ventas' o de 'marqueting'
+select job_history.employee_id "Id. Empleado",employees.first_name "Nombre", count (*) "Rotaciones"
+from  hr.job_history, hr.employees, hr.departments
+    where job_history.employee_id = employees.employee_id
+    and employees.department_id = departments.department_id
+    and lower(departments.department_name) in ('sales', 'marketing')
+group by job_history.employee_id,employees.first_name 
+having count (*) > 1
+order by job_history.employee_id;
+
+--Muestra el numero de empleados contratados en cada mes
+select to_char(employees.hire_date,'MONTH')"MES", count(employees.employe_id) "Numero de empleados"
+from hr.employes
+group by to_char(employees.hire_date,'MONTH')
+order by 1;
+--¿cual es el mes con mas contratos?
+select to_char(employees.hire_date,'MONTH')"MES", count(employees.employe_id) "Numero de empleados"
+from hr.employes
+group by to_char(employees.hire_date,'MONTH')
+having count (*) = (select max(count(*))from hr.employes
+					group by to_char(employees.hire_date,'MONTH')  )--subconsulta
+order by 2;
+--Muestra cuantos emplados han sido contratados en el mes de julio // no es agrupada
+select count(*)
+from hr.employees
+where employees.hire_date like '%JUL%';
+--Muestra el departamento con mas empleados
+select employees.department_id "id departamento" , count (*) "nº se empleados en departamento"
+from hr.employees
+group by employees.department_id
+having count(*) = (select max(count(*))from hr.employees
+    				group by employees.department_id)
+order by employees.department_id;
+
+--Muestra la region con mas paises 
+select emp.manager_id "ID manager",mgr.last_name, mgr.first_name "Nombre manager", 
+    count(*) "empleados a su cargo"
+from hr.employees emp, hr.employees mgr
+where emp.manager_id = emp.employee_id
+having count(*) = (select max(count(*))from hr.countries 
+    				group by countries.region_id)
+order by countries.region_id;
+
+--Muestra el manager con mas empleados a su cargo
+select emp.manager_id "ID manager",mgr.last_name, mgr.first_name "Nombre manager", 
+    count(*) "empleados a su cargo"
+from hr.employees emp, hr.employees mgr
+group by employees.manager_id,mgr.last_name, mgr.first_name
+having count(*) = (select max(count(*))from hr.employees
+    				group by employees.manager_id)
+order by employees.manager_id;
+
+
+--- /////OUTER JOIN /////////////////////
+--por defecto (sin ponerlo) inter joing
+select employees.department_id "id departamento", count (*) "nº se empleados en departamento"
+from hr.employees
+group by employees.department_id
+order by employees.department_id;

@@ -1,0 +1,26 @@
+--PRUEBA DE FUNCIONES ORACLE
+desc dual;
+select * from dual;
+
+--dual para realizar pruebas
+select sysdate from dual;--no requiere parametros
+select power(2,3) from dual;-- dos al cubo
+select round(4.12374,3) from dual; --aproximacion de 4.1231 a 3 decimales 
+select round(4.12374,1), round(3.456), round(3.6) from dual;
+select floor(3.4), floor(3.8) from dual; --trunca xd
+select cell (3.4), cell(3.8) from dual;
+
+select * from scott.emp;
+--muestra los sueldos de los empleados aplicadas las comisiones
+select emp.empno, emp.ename, emp.sal"Salario base", emp.comm"Comisiones",
+    (emp.sal + nvl(emp.comm,0))"Sueldo final"
+from scott.emp;
+--nvl para usa en caso que queramos usar en el que null sea igual a 0
+
+--mostrar la suma de los salarios de los empleados del departamento 20
+select sum(emp.sal)"Salarios del departamento 20" from scott.emp where emp.deptno=20;
+
+--mostrar el numero de empleados que existen
+select count(emp.comm)from scott.emp;--erronea porque cuenta nulos
+select count(emp.empno)from scott.emp;
+select count (*) from scott.emp; --cuenta filas

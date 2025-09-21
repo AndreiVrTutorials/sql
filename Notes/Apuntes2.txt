@@ -1,0 +1,109 @@
+08/01/2025 tabla del script empresa
+
+-- mostrar los datos del empleado con su departamento asociado pero quiero que salga el nombre
+
+select * from scott.emp;
+select * from scott.dept;
+
+-- Cualificamos los datos que sacamos para que no se repitan, para ello hay que poner condiciones
+
+select emp.*,dept.dname "Nombre departamento" from scott.emp, scott.dept
+    where emp.deptno=dept.deptno
+    order by emp.deptno;
+
+------
+-- Consultas multitabla script empresa
+-- Mostrar los vendedores (nombre,edad,fecha de contrato)
+-- junto con la oficina (ciudad) con los que estan asignado
+-- ordenado por ventas de vendedor
+--Mostrar los vendedores junto con la oficina (ciudad) a la que están asignados
+--ordenando los resultados por ventas del vendedor
+
+select repventas.nombre, repventas.edad, repventas.contrato,
+       oficinas.oficina, oficinas.ciudad, repventas.ventas
+from repventas, oficinas
+where repventas.oficina_rep = oficinas.oficina
+order by repventas.ventas;
+
+--09/01/2025
+--tabla del script empresa
+--mostrar los vendedores junto con sus directores (NUM_EMPLEADO = DIRECTOR) //es reflexiva
+select vendedores.num_empl "Nº vendedor", vendedores.nombre "Nombre vendedor",
+    directores.num_empl "Nº director", directores.nombre "Nombre director"
+from repventas vendedores, repventas directores --alias
+where vendedores.director = directores.num_empl
+order by vendedores.num_empl;
+
+
+select * from repventas;
+--mostrar las oficinas junto con sus directores (NUM_EMPLEADO = DIR)
+select oficinas.oficina, oficinas.ciudad, oficinas.dir, 
+    repventas.num_empl, repventas.nombre, repventas.titulo
+from repventas, oficinas
+where oficinas.dir = repventas.num_empl;
+
+--tabla del script human resources (nube)
+--13/01/2025
+
+-- esquema hr
+
+--1 Mostrar regiones con los paises a los que pertenecen
+select regions.region_id, regions.region_name, countries.country_name
+from hr.regions, hr.countries
+where regions.region_id = countries.region_id --cada region con su pais 
+order by regions.region_id;
+
+--2. Muestra para cada emppleado su historico de los trabajos por los que ha pasado (con fecha inico y fecha final)
+select * from hr.job_history order by 1;--tabla del historial by 1 primera columna de cada tabla, más rapido 1
+select employees.employee_id, employees.first_name, employees.last_name,
+		job_history.start_date, job_history.end_date, job_history.job_id
+from hr.employees, hr.job_history
+where employees.employee_id = job_history.employee_id
+order by 3; --ordenar por la columna 3
+
+--2.B Modifica la consulta anterior añadiendo el titulo del trabajo que ha ocupado
+--(además del id)
+select employees.employee_id, employees.first_name, employees.last_name,
+		job_history.start_date, job_history.end_date, job_history.job_id,
+    	jobs.job_id, jobs.job_title
+from hr.employees, hr.job_history, hr.jobs
+where employees.employee_id = job_history.employee_id--condicion de joing
+and jobs.job_id = job_history.job_id
+order by 3;
+
+--3. Muestra los empleados que tienen de jefe al empleado con codigo 100 o 125, que tienen un salario superior a 5000€ , mostrando el puesto que 
+-- ocupa y su salario
+select employees.employee_id, employees.first_name, employees.last_name, employees.manager_id,
+		employees.salary, jobs.job_id, jobs.job_title
+from hr.employees, hr.jobs
+where employees.job_id = jobs.job_id
+and employees.manager_id in (100,124)
+and employees.salary > 5000
+order by 1;
+
+-- modifica la consulta anteriro añadiendo el nombre y apellido
+select emp.employee_id, emp.first_name, emp.last_name, emp.manager_id,mg.first_name, mg.last_name,
+    emp.salary,
+    jobs.job_id, jobs.job_title
+from hr.employees emp, hr.jobs,hr.employees mg
+	where emp.job_id=jobs.job_id
+    and emp.manager_id=mg.employee_id
+	and emp.manager_id in (100,108)
+	and emp.salary>5000
+order by 1;
+
+--4. Muestra las localidades junto con los departamentos que están ubicados en ellas.
+select locations.*, departments.department_id, departments.department_name
+from hr.locations, hr.departments
+where locations.location_id = departments.location_id
+order by departments.department_id;
+
+--5. modifica la anrterior para solo mostrar los departamentos que no estan en EE.UU
+select locations.*, departments.department_id, departments.department_name
+from hr.locations, hr.departments
+where locations.location_id = departments.location_id
+    and locations.country_id <> 'US'
+order by departments.department_id;
+
+--15/01/2025
+count(*) cuenta filas

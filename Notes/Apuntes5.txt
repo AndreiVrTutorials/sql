@@ -1,0 +1,88 @@
+05/02/2025
+subconsultas
+en caso que nos ponga" resuelvelo de dos formas diferentes" una puede ser con y 
+la otra sin subconsultas.
+
+con el esquema hr ////////////
+
+--subconsultas
+select * from hr.employees;
+
+--mostrar los empleados que tienen el mismo puesto que 'Alexander Hunold'
+
+-- a) obtener puesto de 'Alexander Hunold'
+select employees.job_id
+from hr.employees
+where employees.first_name= 'Alexander'
+and last_name='Hunold';
+
+--b) obtener los datos de los empleados con ese puesto
+select * from hr.employees where employees.job_id ='IT_PROG';
+
+--c) juntar tablas
+select * from hr.employees 
+where employees.job_id = (select employees.job_id
+						from hr.employees
+						where employees.first_name = 'Alexander'
+						and employees.last_name ='Hunold'); --correjir
+
+-- si quiero mas de un dato no puede ser = debe ser otro no de comparacion
+--mostrar los empleados cuyo salario es superior al salario medio de todos los empleados
+--a) obtener el salario medio de todos los empleados
+select round(avg(employees.salary),2)
+from hr.employees;
+
+--b) obtener los empleados con salario superior a ese valor '6467.44'
+select * from hr.employees where employees.salary >6467.44;
+
+--c) juntamos todo
+select * 
+from hr.employees where employees.salary > (select avg(employees.salary)
+											from hr.employees);
+-- mostrar los empleados que no tienen como manager a 'Steven King'
+--primero seria saber que id tiene ese manager y luego juntar
+select * from hr.employees 
+where employees.manager_id <>(select employees.employee_id
+  							 from hr.employees
+   							 where employees.first_name = 'Steven'
+  							  and employees.last_name ='King');
+
+-- mostrar los datos de los empleados que tienen un puesto igual a alguno de los puestos de los empleados
+-- del departamento 20
+select * from hr.employees where employees.job_id = (select employees.job_id from hr.employees where employees.department_id =20);
+    --sale error, no se puede
+
+select * from hr.employees 
+where employees.job_id in (select employees.job_id from hr.employees where employees.department_id =20);
+    --hay que usar el operador in
+
+select * from hr.employees where employees.department_id =20; -- no puedo usar =
+
+select * from hr.employees where employees.department_id in (10,20,30);
+
+--mostrar los empleados que tienen como manager a 'King', 'Austin', 'Pataballa'
+select * from hr.employees 
+where employees.manager_id in (select employees.employee_id from hr.employees 
+    							where employees.last_name  in ('King','Austin', 'Pataballa','Hunoid'));
+
+-- mostrar los departamentos que tienen empleados trabajando
+select * from hr.departments 
+where departments.department_id in (select distinct employees.department_id from hr.employees); 
+--sin el distinct saca uno por cada fila con su departamento, salen repetidos
+    						
+--06/02/2025
+
+-- la consulta anterior de otra forma con test exist/ para las cuales existan tabla empleados, relacionadas con el departamento
+select * from hr.departments 
+where exists (select * from hr.employees where employees.department_id = departments.department_id); --imprescindible esta otra parte de where
+
+
+select * from hr.departments 
+where not exists (select * from hr.employees where employees.department_id = departments.department_id); -- da los que no tienen empleados trabajando
+
+--mostrar los empleados que han rotado por mas de un puesto de trabajo
+--(resuelvela de todas las formas posibles)
+
+--mostrar las localizaciones en las que no hay ningun departamento 
+select * from hr.locations
+where not exists (select * from hr.departments where departments.location_id = locations.location_id);

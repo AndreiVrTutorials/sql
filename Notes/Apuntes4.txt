@@ -1,0 +1,13 @@
+22/01/2025
+create table CHICAS (
+    nombre varchar2(30),
+    provincia varchar2(10)
+);
+/
+insert into chicos values ('Juan','VA')
+insert into chicos values ('Pedro','VA')
+insert into chicos values ('Luis','LE')
+insert into chicos values ('Pablo','PA')
+insert into chicos values ('Alberto','PA')
+
+select * from CHICOS
