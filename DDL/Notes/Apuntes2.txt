@@ -1,0 +1,175 @@
+select * from user_tables
+select * from user_objects order by 5
+select * from user_constraints where table_name in ('PERSONA', 'PROVINCIAS')
+select * from user_cons_columns where table_name in ('PERSONA', 'PROVINCIAS')
+--------------------------------------
+
+create table provincias (
+    codigo_provincia char(2) primary key,
+    nombre_provincia varchar(50) not null
+);
+
+--añadimos dos columnas a la tabla
+
+alter table provincias
+    add (
+    superficie integer,
+    habitantes integer constraint habitantes_positivo check(habitantes>0)
+    );
+
+-- modificamos el tipo de datos de la columna superficie
+
+alter table provincias
+    modify superficie number(8,2);
+
+-- borramos la columna habitantes
+
+alter table provincias
+    drop column habitantes;
+
+-- deshabilitamos la restriccion PK de la tabla provincias
+
+alter table provinicias
+    disable constraint provincias_pk;
+
+desc provincias;
+
+create table personas (
+    dni varchar2(9),
+    nombre varchar2(50),
+    apellidos varchar2(100),
+edad integer,
+    altura number(3,2),
+    fecha_nac date default sysdate,
+    codigo_provincia char(2),
+    constraint personas_pk primary key (dni),
+    constraint nombre_req check (nombre is not null),
+    constraint apellidos_req check (apellidos is not null),
+    constraint edad_positive check (edad > 0),
+    constraint provincias_fk foreign key (codigo_provincia) references provincias(codigo_provincia)
+);
+
+
+select * from scott.emp
+
+--creamos una nueva tabla con los vendedores de scott
+   
+create table vendedores (
+    num_vendedor number(4,0),
+    nombre_vendedor varchar2(100),
+    fecha_contrato date,
+    salario number(7,2),
+    comisiones number (7,2)
+) as
+select emp.empno, emp.ename, emp.hiredate, emp.sal, emp.comm
+from scott.emp
+where job like 'SALESMAN';
+
+select * from vendedores
+
+drop table tabla_a cascade constraints;
+create table tabla_a(
+    a1 number primary key,
+    a2 varchar2(10)
+);
+
+truncate table tabla_b;
+create table tabla_b(
+    b1 char(3) primary key,
+    b2 date,
+    b3 number references tabla_a(a1)
+);
+
+-- drop borra la tabla, truncate el contenido de esta
+
+desc scott.emp;
+desc scott.dept;
+select * from user_views;
+
+-- Creamos una vista llamada Empleados30 que muestre los empleados del departamento 30
+
+create or replace view Empleados30
+as
+select * from scott.emp where DEPTNO = 30
+
+select * from Empleados30;
+
+create or replace view Empleados30 (numero_empleado, nombre_empleado, fechacontrato, departamento)
+as
+select emp.empno, emp.ename, emp.hiredate, emp.deptno from scott.emp where DEPTNO = 30;
+
+--13/03/2025
+desc emple;
+desc depart; 
+select * from user_views;
+
+create or replace view emple30 (numeor_empleado, nombre_empleado, fecha_contrato, departamentos)
+as 
+select emp_no, apellido, fecha_alt, dept_no from emple where dept_no =30
+    with check option;
+
+select * from emple30;
+
+--PROBAMOS LA OPCION 'WITH CHECK OPTION'
+--Insertamos un nuevo empleado a traves de la vista
+insert into emple30 values(9779, 'PRUEBA', sysdate, 30);     --(en vez de tabla, la vista) sin  esa opcion, se hace pero no se puede ver
+
+--comprobar que las tablas emple y depart tienen primary key, sino es asi, crealas
+--una vez creadas, comprueba sus indices
+--(no lo esta)
+select * from user_constraints where table_name in ('EMPLE', 'DEPART');
+select * from user_indexes where table_name in ('EMPLE', 'DEPART');-- por defecto al cear un pk, se crea tambien un indice con ese nombre
+desc emple;
+desc depart; 
+
+alter table emple
+add constraint emple_pk primary key (emp_no);
+
+alter table depart
+add constraint depart_pk primary key (dept_no);
+
+--17/03/2025
+--indexamos la tabla emple por la columna apellido y comprobamos la creacion del indice
+--crear indice:
+create index apellido_idx
+on emple (apellido);
+--comprobamos: 
+select * from user_indexes where table_name in ('EMPLE', 'DEPART');
+--hay que activar la monitorizacion
+
+--SINONIMOS 
+select * from user_synonyms;
+select * from all_synonyms;
+
+--creamos sinonimos para las tablas de HR employees y departments
+create or replace synonym my_employees for hr.employees;
+create or replace synonym my_departments for hr.departments;
+
+--los vemos en 
+select * from user_synonyms;
+select * from my_employees;-- vemos el sinonimo
+--alias-sinonimo --> son lo mismo, dos formas diferentes para llamar a la tabla, alias de forma inmediata al ejecutar select, 
+--sinonimos son permanentes, se guarda en el servidor, el alias es temporal
+--drop synonym para borrar sinonimos
+--no se puede truncar un sinonimo, solo se puede truncar las tablas
+
+--SECUENCIAS
+--autoincrement un tipo de datos numericos en oracle no hay
+--por lo uqe usamos secuencias que genera esos autoincrementos
+select * from user_sequences;
+select * from all_sequences;
+
+select * from emple;
+-- creamos una secuencias para generar los numeros de los empleados (tabla EMPLE-->EMP_NO)
+create sequence emple_autoincrement
+start with 1
+minvalue 1
+maxvalue 9999
+increment by 1;
+
+desc emple; --vemos las obligatorias
+insert into emple (emp_no, apellido, dept_no)
+values (emple_autoincrement.nextval, 'PEPE',10);
+
+insert into emple (emp_no, apellido, dept_no)
+values (emple_autoincrement.nextval, 'PAU',10);

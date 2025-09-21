@@ -1,0 +1,68 @@
+--26/02/2025
+select * from user_tables;
+select * from user_constraints;-- no data found dado que no hay aun restricciones
+select * from user_constraints where table_name in ('PERSONAS', 'PROVINCIAS');
+select * from user_cons_columns where table_name in ('PERSONAS', 'PROVINCIAS');
+select * from user_objets order by 5;
+---------------------------------------
+create table provincias(
+    codigo_provincia   char(2) constraint provicias_pk primary key,
+    nombre_provincia   varchar2(50) not null--nivel columna
+)
+--añadimos 2 columnas a la tabla provincias
+alter table provincias
+    add(
+    	superficie   integer,
+    	habitantes   integer   constraints habitantes_positive check(habitantes > 0)
+    );
+--modificamos el tipo de datos de la columna superficie
+alter table provincias
+    modify superficie number(8,2);
+--borramos la columna habitantes
+alter table provincias
+    drop column habitantes;
+--deshabilitar la restriccion PK de la tabla provincias
+alter table provincias
+    disable constraints provincias_pk;-- da error porque se usa de fk, habria que desabilitar de fk y luego de pk
+
+create table personas(
+    dni varchar2(9),
+    nombre varchar2(50),
+    apellidos varchar2(100),
+    edad integer,
+    altura number(3,2),
+    fecha_nac date
+);
+
+--creamos una nueva tabla con  los vendedores de scott
+select * from scott.emp;
+create table vendedores(
+	num_vendedor ,
+    nombre_vendedor ,
+    fecha_contrato ,
+    salario ,
+    comisiones 
+)as
+select emp.empno, emp.ename,emp.hiredate,emp.sal,emp.comm
+from scott.emp
+where job like 'SALESMAN';
+
+--27/02/2025
+-- la primera con restricciones
+drop table personas;
+create table personas(
+    dni varchar2(9),
+    nombre varchar2(50),
+    apellidos varchar2(100),
+    edad integer,
+    altura number(3,2),
+    fecha_nac date			default sysdate,
+    codigo_provincia char(2),
+    constraint personas_pk primary key (dni),
+    constraint nombre_req check(nombre is not null),
+    constraint apellido_req check(apellidos is not null),
+    constraint edad_positive check(edad > 0),--edad positiva
+    constraint provincias_fk  foreign key (codigo_provincia) references provincias (codigo_provincia)-- a nivel de tabla/ en columna igual menos foreign key
+);
+--05/03/2025 (TAMBIEN MODIFICACIONES DE ANTES)
+

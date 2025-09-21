@@ -1,0 +1,49 @@
+--CON TABLAS_I.SQL
+select * from ALUM2425;
+--1. A partir de la tabla ALUM2425 que contiene los datos de alumnos matriculados en el curso 
+--2024/2025 para un centro de enseñanza, realiza las siguientes consultas:
+--1.1. Obtén todos los datos de los alumnos.
+select * from ALUM2425;
+--1.2. Obtén los siguientes datos de alumnos: DNI, NOMBRE, APELLIDOS, CURSO, NIVEL y 
+--CLASE.
+select  DNI, NOMBRE, APELLIDOS, CURSO, NIVEL, CLASE
+from ALUM2425;
+--1.3. Obtén todos los datos de alumnos cuya población sea 'GUADALAJARA'.
+select * from ALUM2425
+where POBLACION like 'GUADALAJARA';
+--1.4. Obtén el NOMBRE y APELLIDOS de todos los alumnos cuya población sea 
+--'GUADALAJARA'.
+select NOMBRE, APELLIDOS from ALUM2425
+where POBLACION like 'GUADALAJARA';
+--1.5. Consulta el DNI, NOMBRE, APELLIDOS, CURSO, NIVEL y CLASE de todos los alumnos 
+--ordenado por APELLIDOS y NOMBRE ascendentemente.
+select DNI, NOMBRE, APELLIDOS, CURSO, NIVEL, CLASE
+from ALUM2425
+order by 1;
+
+--2. A partir de la tabla NOTAS_ALUMNOS:
+select * from NOTAS_ALUMNOS;
+--2.1. Obtener aquellos nombres de alumnos que tengan un 7 en NOTA1 y cuya media sea 
+--mayor que 6.
+select nombre_alumno
+from NOTAS_ALUMNOS
+where NOTA1 =7
+and ((NOTA1 + NOTA2 + NOTA3)/3)>6;
+--3. Realiza las siguientes consultas en la tabla LIBRERIA:
+select * from LIBRERIA;
+--3.1. Obtener los ejemplares de los libros cuyo tema sea 'LABORES'. Usa el operador'=' y el 
+--operador LIKE. Compara los resultados.
+-- =
+select * from LIBRERIA
+where tema =  'LABORES';
+--LIKE
+select * from LIBRERIA
+where tema like  'LABORES';--no data
+
+--3.2. Visualiza el tema, estante y ejemplares de los libros con un número de ejemplares 
+--comprendidos entre 8 y 15.
+
+--3.3. Visualiza el tema, estante y ejemplares de los libros cuyo estante no esté comprendido 
+--entre la "B" y la "D".
+
+--3.4. Visualiza los temas cuyo número de ejemplares no esté entre 15 y 20, ambos incluidos.
